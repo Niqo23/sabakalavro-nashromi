@@ -1,5 +1,5 @@
 import cv2                      # OpenCV – ვიდეო ნაკადისა და გამოსახულების დასამუშავებლად
-import mediapipe as mp          # Mediapipe – ადამიანის პოზის (pose) ტრეკინგისთვის
+import mediapipe as mp          # Mediapipe – ადამიანის პოზის (pose) დაკვირვებისთვის
 import numpy as np              # NumPy – კუთხის გამოსათვლელი ვექტორული მათემატიკისთვის
 
 #  კუთხის გამოთვლის ფუნქცია სამი წერტილის საფუძველზე
@@ -29,7 +29,7 @@ def analyze_shoulder_press_strict(landmarks, image, counter, stage):
     right_angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
     left_angle = calculate_angle(left_shoulder, left_elbow, left_wrist)
 
-    #  თუ ორივე იდაყვი გაშლილია (≥160°) და ფაზა იყო ქვედა → ჩაითვალოს 1 რეპი
+    #  თუ ორივე იდაყვი გაშლილია (≥160°) და ფაზა იყო ქვედა → ჩაითვალოს 1 განმეორება
     if right_angle >= 160 and left_angle >= 160 and stage == 'down':
         stage = 'up'
         counter += 1
@@ -38,6 +38,7 @@ def analyze_shoulder_press_strict(landmarks, image, counter, stage):
     if right_angle < 70 or left_angle < 70:
         stage = 'down'
 
+    #ნიშნავს, რომ ცვლადები ინიცირდება ცარიელი სტრინგებით. ეს ნიშნავს, რომ ამ ეტაპზე ისინი არ შეიცავენ არანაირ ტექსტს.
     feedback_r = ""
     feedback_l = ""
 
@@ -65,7 +66,7 @@ def analyze_shoulder_press_strict(landmarks, image, counter, stage):
     color_r = draw_lines_and_feedback(image, right_shoulder, right_elbow, right_wrist, right_angle, "Right")
     color_l = draw_lines_and_feedback(image, left_shoulder, left_elbow, left_wrist, left_angle, "Left")
 
-    # ტექსტური შეფასება (feedback)
+    # ტექსტური შეფასება 
     feedback_r = "Right arm good" if 70 < right_angle < 180 else "Right arm out of range"
     feedback_l = "Left arm good" if 70 < left_angle < 180 else "Left arm out of range"
 
@@ -75,7 +76,7 @@ def analyze_shoulder_press_strict(landmarks, image, counter, stage):
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 
-# რეპების მთვლელი და ფაზის კონტროლი
+# განმეორების მთვლელი და ფაზის კონტროლი
 counter = 0
 stage = None
 
@@ -105,7 +106,7 @@ with mp_pose.Pose(min_detection_confidence=0.5,
             lm = results.pose_landmarks.landmark
             feedback, counter, stage = analyze_shoulder_press_strict(lm, image, counter, stage)
 
-            # ხაზავს ადამიანის სკელეტს
+            # ხაზავს ადამიანის ჩონჩხს
             mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
 
             # ეკრანზე აჩვენებს ტექსტურ უკუკავშირს
@@ -115,7 +116,7 @@ with mp_pose.Pose(min_detection_confidence=0.5,
                 cv2.putText(image, line, (10, y0), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
                 y0 += 30
 
-            # რეპების რაოდენობის გამოტანა
+            # განმეორების რაოდენობის გამოტანა
             cv2.putText(image, f"Reps: {counter}", (10, y0 + 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
 
         # შედეგის ჩვენება OpenCV ფანჯარაში
