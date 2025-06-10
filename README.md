@@ -1,2 +1,2 @@
-# sabakalavro-nashromi
+# sabakalavro-nashromi 2025
 ვარჯიშის სწორი ტექნიკის შეფასება კომპიუტერული ხედვის გამოყენებით
